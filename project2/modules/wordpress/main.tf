@@ -8,9 +8,9 @@ resource "aws_vpc" "wordpress_vpc" {
 
 # Subnets
 resource "aws_subnet" "wordpress_subnet" {
-  for_each = var.subnets
-  vpc_id = aws_vpc.wordpress_vpc.id
-  cidr_block = each.value.cidr
+  for_each          = var.subnets
+  vpc_id            = aws_vpc.wordpress_vpc.id
+  cidr_block        = each.value.cidr
   availability_zone = each.value.az
   tags = {
     Name = "${each.key}-subnet"
@@ -32,23 +32,23 @@ resource "aws_route_table" "rt" {
 }
 
 resource "aws_route_table_association" "a" {
-  for_each = aws_subnet.wordpress_subnet
-  subnet_id = each.value.id
+  for_each       = aws_subnet.wordpress_subnet
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.rt.id
 }
 
 # EC2 Instance
 resource "aws_instance" "group_3" {
-  ami                    = var.ami
-  instance_type          = var.instance_type
+  ami                         = var.ami
+  instance_type               = var.instance_type
   associate_public_ip_address = true
-  subnet_id              = tolist(values(aws_subnet.wordpress_subnet))[0].id
-  key_name               = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.group_3.id]
+  subnet_id                   = tolist(values(aws_subnet.wordpress_subnet))[0].id
+  key_name                    = aws_key_pair.deployer.key_name
+  vpc_security_group_ids      = [aws_security_group.group_3.id]
   tags = {
     Name = "Group-3-ec2"
   }
-  user_data              = <<-EOF
+  user_data = <<-EOF
                             #!/bin/bash
                             yum update -y
                             yum install -y httpd php php-mysqlnd
@@ -65,15 +65,15 @@ resource "aws_instance" "group_3" {
 
 # RDS Instance
 resource "aws_db_instance" "wordpress_db" {
-  allocated_storage    = var.database_details.allocated_storage
-  storage_type         = "gp2"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  instance_class       = var.database_details.instance_class
-  identifier           = "wordpressdb"
-  username             = var.database_details.username
-  password             = var.database_details.password
-  db_subnet_group_name = aws_db_subnet_group.db_subnet.name
+  allocated_storage      = var.database_details.allocated_storage
+  storage_type           = "gp2"
+  engine                 = "mysql"
+  engine_version         = "5.7"
+  instance_class         = var.database_details.instance_class
+  identifier             = "wordpressdb"
+  username               = var.database_details.username
+  password               = var.database_details.password
+  db_subnet_group_name   = aws_db_subnet_group.db_subnet.name
   vpc_security_group_ids = [aws_security_group.group_3.id]
   skip_final_snapshot    = true
 }
@@ -81,14 +81,14 @@ resource "aws_db_instance" "wordpress_db" {
 
 # Database Subnet Group
 resource "aws_db_subnet_group" "db_subnet" {
-  name        = "my-db-subnet-group"
+  name       = "my-db-subnet-group"
   subnet_ids = values(aws_subnet.wordpress_subnet).*.id
 }
 
 # Subdomain
 
 resource "aws_route53_record" "subdomain" {
-  zone_id = "Z06738651TK0FJ6ZYYGU5"  // Replace with your hosted zone ID
+  zone_id = "Z06738651TK0FJ6ZYYGU5" // Replace with your hosted zone ID
   name    = "a-syl.com"
   type    = "A"
   ttl     = "300"

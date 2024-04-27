@@ -8,9 +8,9 @@ variable "instance_type" {
   type        = string
 }
 
-variable vpc_cidr {
-    type = string
-    description = "Provide vpc cidr block"
+variable "vpc_cidr" {
+  type        = string
+  description = "Provide vpc cidr block"
 }
 
 variable "subnets" {
