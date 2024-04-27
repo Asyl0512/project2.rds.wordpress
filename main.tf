@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 module "wordpress" {
-  source           = "./modules/wordpress"
+  source           = "../RDS-wordpress/"
   region           = var.region
   vpc_cidr         = var.vpc_cidr
   subnets          = var.subnets
